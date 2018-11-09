@@ -8,7 +8,7 @@ app.options('*', cors());
 app.use(bp.json());
 //http://51.254.143.229/phpmyadmin
 var connection = mysql.createConnection({
-host : 'vps481071', //single2480a.banahosting.com
+host : '51.254.143.229', //single2480a.banahosting.com
 port : '3306', //3306
 user : 'root', //tmggnocf_usuario
 password : 'root', //MNOUuU5xmiqA
@@ -63,6 +63,47 @@ resp.send(rows);
 })
 });
 
+app.get('/datosEstaciones', function(req, resp) {
+
+	var optionsEstaciones = {
+  "method": "GET",
+  "hostname": "opendata.aemet.es",
+  "path": "/opendata/api/valores/climatologicos/inventarioestaciones/todasestaciones?api_key="+key, 
+  "json":true,
+  "encoding": null,
+  "headers": {
+    "cache-control": "no-cache"
+  }
+};
+
+var reqEstaciones = http.request(optionsEstaciones, function (res) {
+  var chunks = [];
+
+  res.on("data", function (chunk) {
+    chunks.push(chunk);
+  });
+
+  res.on("end", function () {
+    var body = Buffer.concat(chunks);
+    var datos = JSON.parse(body);
+    console.log(datos.datos);
+    
+
+    var reg = /.+?\:\/\/.+?(\/.+?)(?:#|\?|$)/;
+	pathname = reg.exec(datos.datos)[1];
+	//var path = datos.pathname;
+	console.log("PATH "+pathname);
+	segundaEstaciones.pathname=pathname;
+	console.log("PATH SETTINGS: "+segundaEstaciones.pathname);
+
+});
+
+console.log('/datosEstaciones');
+resp.status(200);
+resp.send(pathname);
+
+});
+
 
 app.get('/introducirDatos', function(req, resp) {
 
@@ -89,16 +130,6 @@ var optionsMunicipios = {
   }
 };
 
-var optionsEstaciones = {
-  "method": "GET",
-  "hostname": "opendata.aemet.es",
-  "path": "/opendata/api/valores/climatologicos/inventarioestaciones/todasestaciones?api_key="+key, 
-  "json":true,
-  "encoding": null,
-  "headers": {
-    "cache-control": "no-cache"
-  }
-};
 
 var segundaEstaciones = {
 	"method": "GET",
@@ -151,27 +182,7 @@ var reqMunicipios = http.request(optionsMunicipios, function (res) {
 reqMunicipios.end();
 
 
-var reqEstaciones = http.request(optionsEstaciones, function (res) {
-  var chunks = [];
 
-  res.on("data", function (chunk) {
-    chunks.push(chunk);
-  });
-
-  res.on("end", function () {
-    var body = Buffer.concat(chunks);
-    var datos = JSON.parse(body);
-    console.log(datos.datos);
-    
-
-    var reg = /.+?\:\/\/.+?(\/.+?)(?:#|\?|$)/;
-	pathname = reg.exec(datos.datos)[1];
-	//var path = datos.pathname;
-	console.log("PATH "+pathname);
-	segundaEstaciones.pathname=pathname;
-	console.log("PATH SETTINGS: "+segundaEstaciones.pathname);
-
-});
 
 
 
