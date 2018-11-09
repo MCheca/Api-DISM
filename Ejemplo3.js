@@ -7,6 +7,7 @@ app.use(cors());
 app.options('*', cors());
 app.use(bp.json());
 //http://51.254.143.229/phpmyadmin
+//wget https://raw.githubusercontent.com/MCheca/DISM/master/Ejemplo3.js
 var connection = mysql.createConnection({
 host : '51.254.143.229', //single2480a.banahosting.com
 port : '3306', //3306
@@ -64,8 +65,9 @@ resp.send(rows);
 });
 
 app.get('/datosEstaciones', function(req, resp) {
-
-	var optionsEstaciones = {
+var http = require("https");
+var pathname= "";
+ var optionsEstaciones = {
   "method": "GET",
   "hostname": "opendata.aemet.es",
   "path": "/opendata/api/valores/climatologicos/inventarioestaciones/todasestaciones?api_key="+key, 
@@ -73,7 +75,8 @@ app.get('/datosEstaciones', function(req, resp) {
   "encoding": null,
   "headers": {
     "cache-control": "no-cache"
-  }
+ }
+
 };
 
 var reqEstaciones = http.request(optionsEstaciones, function (res) {
@@ -93,15 +96,19 @@ var reqEstaciones = http.request(optionsEstaciones, function (res) {
 	pathname = reg.exec(datos.datos)[1];
 	//var path = datos.pathname;
 	console.log("PATH "+pathname);
-	segundaEstaciones.pathname=pathname;
-	console.log("PATH SETTINGS: "+segundaEstaciones.pathname);
 
 });
 
-console.log('/datosEstaciones');
-resp.status(200);
-resp.send(pathname);
 
+
+
+  });
+
+
+reqEstaciones.end();
+
+resp.status(200);
+resp.send("datos");
 });
 
 
@@ -131,7 +138,8 @@ var optionsMunicipios = {
 };
 
 
-var segundaEstaciones = {
+
+/*var segundaEstaciones = {
 	"method": "GET",
 	"hostname": "opendata.aemet.es",
 	"path": "/opendata/sh/f46e22f2",
@@ -140,7 +148,7 @@ var segundaEstaciones = {
 	"headers": {
 		"cache-control": "no-cache"
 	}
-};
+};*/
 
 
 
@@ -183,46 +191,6 @@ reqMunicipios.end();
 
 
 
-
-
-
-
-  });
-	segundaEstaciones.pathname=pathname;
-			var reqSegunda = http.request(segundaEstaciones, function (res) {
-				console.log("Peticion realizada");
-				console.log("************************"+pathname+"************************");
-				var chunks2 = [];
-
-			res.on("data", function (chunk) {
-    		chunks2.push(chunk);
-  			});
-
-  			res.on("end", function () {
-    			var body = Buffer.concat(chunks2);
-    			var datosE = JSON.parse(body);
-    		datosE.forEach(function (entry) {
-					sql = "INSERT INTO estaciones (nombre, latitud,longitud,indicativo) VALUES ('"+entry.nombre.replace("'","''")+"','"+ entry.latitud.replace("'","''") +"','"+ entry.longitud.replace("'","''")+"','"+entry.indicativo+"')";
-					connection.query(sql, function(err, rows) {
-					if (err) {
-						console.log('Error en /introducirDatos al añadir: '+entry.indicativo+" ------------------- "+err);
-						resp.status(500);
-						resp.send({message: "Error al obtener usuarios"});
-					}
-					else {
-						console.log('Añadido: '+entry.indicativo);
-						resp.status(200);
-					}
-					});
-	                j = j + 1;
-				});
-			});
-
-
-			});
-
-reqSegunda.end();
-reqEstaciones.end();
 
 
 
