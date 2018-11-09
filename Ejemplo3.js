@@ -7,11 +7,11 @@ app.use(cors());
 app.options('*', cors());
 app.use(bp.json());
 var connection = mysql.createConnection({
-host : 'localhost',
-port : '3311',
-user : 'usuario',
-password : 'clave',
-database : 'dism'
+host : 'single2480a.banahosting.com', //single2480a.banahosting.com
+port : '3306', //3306
+user : 'tmggnocf_usuario', //tmggnocf_usuario
+password : 'MNOUuU5xmiqA', //MNOUuU5xmiqA
+database : 'tmggnocf_dism'
 });
 
 var key = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjb3NjaGVjYTFAaG90bWFpbC5jb20iLCJqdGkiOiIwZDk1YzgxZi1hNjc5LTQwYzEtYTVhZS03ZTM1YWE1MDhmNzAiLCJpc3MiOiJBRU1FVCIsImlhdCI6MTUzNzQ0NTY1MSwidXNlcklkIjoiMGQ5NWM4MWYtYTY3OS00MGMxLWE1YWUtN2UzNWFhNTA4ZjcwIiwicm9sZSI6IiJ9.8KSLXTe58-f7hTXvTdT5SnwYZIMAKypYsTccVmbHsuc';
