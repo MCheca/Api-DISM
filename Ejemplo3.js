@@ -54,7 +54,7 @@ connection.query('select * from observacion', function(err, rows) {
 if (err) {
 console.log('Error en /observacion '+err);
 resp.status(500);
-resp.send({message: "Error al obtener usuarios"});
+resp.send({message: "Error al obtener observacion"});
 }
 else {
 console.log('/observacion');
@@ -62,6 +62,23 @@ resp.status(200);
 resp.send(rows);
 }
 })
+});
+
+app.get('/observacion/:id', function(req, resp, next) {
+var itemId = req.params.id;
+connection.query('select * from observacion where idema="'+itemId+'"', function(err, rows) {
+if (err) {
+console.log('Error en /observacion/'+itemId+' Error: '+err);
+resp.status(500);
+resp.send({message: "Error al obtener observacion"});
+}
+else {
+console.log('/observacion');
+resp.status(200);
+resp.send(rows);
+}
+})
+
 });
 
 app.get('/datosEstaciones', function(req, resp) {
