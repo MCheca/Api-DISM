@@ -9,10 +9,10 @@ app.use(bp.json());
 //http://51.254.143.229/phpmyadmin
 //wget https://raw.githubusercontent.com/MCheca/DISM/master/Ejemplo3.js
 var connection = mysql.createConnection({
-host : '51.254.143.229', //single2480a.banahosting.com
+host : '51.254.143.229', //51.254.143.229
 port : '3306', //3306
-user : 'root', //tmggnocf_usuario
-password : 'root', //MNOUuU5xmiqA
+user : 'root', //root
+password : 'root', //root
 database : 'dism'
 });
 
@@ -89,13 +89,9 @@ var reqEstaciones = http.request(optionsEstaciones, function (res) {
   res.on("end", function () {
     var body = Buffer.concat(chunks);
     var datos = JSON.parse(body);
-    console.log(datos.datos);
+    pathname=datos.datos;
     
-
-    var reg = /.+?\:\/\/.+?(\/.+?)(?:#|\?|$)/;
-	pathname = reg.exec(datos.datos)[1];
-	//var path = datos.pathname;
-	console.log("PATH "+pathname);
+	resp.send(datos);
 
 });
 
@@ -108,7 +104,51 @@ var reqEstaciones = http.request(optionsEstaciones, function (res) {
 reqEstaciones.end();
 
 resp.status(200);
-resp.send("datos");
+console.log("/datosEstaciones")
+});
+
+app.get('/datosObservacion', function(req, resp) {
+var http = require("https");
+var pathname= "";
+ var optionsObservacion = {
+  "method": "GET",
+  "hostname": "opendata.aemet.es",
+  "path": "/opendata/api/observacion/convencional/todas?api_key="+key, 
+  "json":true,
+  "encoding": null,
+  "headers": {
+    "cache-control": "no-cache"
+ }
+
+};
+
+var reqEstaciones = http.request(optionsObservacion, function (res) {
+  var chunks = [];
+
+  res.on("data", function (chunk) {
+    chunks.push(chunk);
+  });
+
+  res.on("end", function () {
+    var body = Buffer.concat(chunks);
+    var datos = JSON.parse(body);
+    pathname=datos.datos;
+    console.log(datos.datos);
+    
+	resp.send(datos);
+
+});
+
+
+
+
+  });
+
+
+reqEstaciones.end();
+
+resp.status(200);
+console.log("/datosObservacion")
 });
 
 
@@ -123,6 +163,8 @@ var sql = "";
 
 connection.query('DELETE FROM municipios');
 connection.query('DELETE FROM estaciones');
+connection.query('DELETE FROM observacion');
+
 
 
 
@@ -138,20 +180,7 @@ var optionsMunicipios = {
 };
 
 
-
-/*var segundaEstaciones = {
-	"method": "GET",
-	"hostname": "opendata.aemet.es",
-	"path": "/opendata/sh/f46e22f2",
-	"json":true,
-	"encoding": null,
-	"headers": {
-		"cache-control": "no-cache"
-	}
-};*/
-
-
-
+var url = "";
 
 
 var reqMunicipios = http.request(optionsMunicipios, function (res) {
@@ -169,12 +198,11 @@ var reqMunicipios = http.request(optionsMunicipios, function (res) {
 				datosfiltrados[j] = entry;
 				sql = "INSERT INTO municipios (nombre, latitud,longitud,num_hab) VALUES ('"+entry.nombre.replace("'","''")+"','"+ entry.latitud.replace("'","''") +"','"+ entry.longitud.replace("'","''")+"','"+entry.num_hab+"')";
 
-				//strSQL = "INSERT INTO MITABLA (CODIGO,NOMBRES) VALUES (1," & _"'" & replace("PEDRITO'S","'","''") & "Ž)"
 				connection.query(sql, function(err, rows) {
 			if (err) {
 				console.log('Error en /introducirDatos al añadir: '+entry.nombre+" ------------------- "+err);
 				resp.status(500);
-				resp.send({message: "Error al obtener usuarios"});
+				resp.send({message: "Error al insertar municipios"});
 			}
 			else {
 				console.log('Añadido: '+entry.nombre);
@@ -190,11 +218,65 @@ var reqMunicipios = http.request(optionsMunicipios, function (res) {
 reqMunicipios.end();
 
 
+const request = require('request');
+
+request('http://vps481071.ovh.net:8080/datosEstaciones', { json: true }, (err, res, body) => {
+  if (err) { return console.log(err); }
+  url = body.datos;
+
+request(url, { json: true }, (err, res, body) => {
+
+var datos = body;
+
+datos.forEach(function (entry){
+	sql = "INSERT INTO estaciones (nombre, latitud,longitud,indicativo) VALUES ('"+entry.nombre.replace("'","''")+"','"+ entry.latitud.replace("'","''") +"','"+ entry.longitud.replace("'","''")+"','"+entry.indicativo+"')";
+		connection.query(sql, function(err, rows) {
+			if (err) {
+				console.log('Error en /introducirDatos al añadir la estacion: '+entry.indicativo+" ------------------- "+err);
+				resp.status(500);
+				resp.send({message: "Error al insertar estaciones"});
+			}
+			else {
+				console.log('Añadida estacion: '+entry.indicativo);
+				resp.status(200);
+			}
+	})
+});
+
+});
+
+});
+
+request('http://vps481071.ovh.net:8080/datosObservacion', { json: true }, (err, res, body) => {
+  if (err) { return console.log(err); }
+  url = body.datos;
+
+request(url, { json: true }, (err, res, body) => {
+
+var datos = body;
+
+datos.forEach(function (entry){
+	sql = "INSERT INTO observacion (idema, ubi,fint,ta) VALUES ('"+entry.idema.replace("'","''")+"','"+ entry.ubi.replace("'","''") +"','"+ entry.fint.replace("'","''")+"','"+entry.ta+"')";
+		connection.query(sql, function(err, rows) {
+			if (err) {
+				console.log('Error en /introducirDatos al añadir la observacion: '+entry.idema+" ------------------- "+err);
+				resp.status(500);
+				resp.send({message: "Error al insertaciar observacion"});
+			}
+			else {
+				console.log('Añadida observacion: '+entry.idema);
+				resp.status(200);
+			}
+	})
+});
+
+});
+
+});
 
 
+  resp.send("DATOS INTRODUCIDOS CORRECTAMENTE");
 
-
-resp.send("TODO BIEN TODO CORRECTO");
 
 });
 
